@@ -1,0 +1,7 @@
+.env
+/wordpress/
+/my-plugin/vendor/
+.idea
+.gitconfig
+/vendor/
+/dv-woocommerce/vendor/
