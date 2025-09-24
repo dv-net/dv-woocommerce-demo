@@ -1,0 +1,113 @@
+services:
+  db:
+    image: mariadb:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_db
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-33066}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mailpit:
+    image: axllent/mailpit
+    volumes:
+      - mailpit-data:/data
+    restart: always
+    environment:
+      MP_MAX_MESSAGES: 100000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  wordpress-setup:
+    image: wordpress:cli
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./wordpress:/var/www/html
+      - ./${COMPOSE_PROJECT_NAME}:/var/www/html/wp-content/plugins/${COMPOSE_PROJECT_NAME}
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DEBUG: 1
+    command: >
+      bash -c "
+      set -e
+        if ! wp core is-installed --allow-root; then
+          echo 'WordPress not found. Starting installation...'
+          wp core download --allow-root
+          wp config create --dbname=${MYSQL_DATABASE} --dbuser=${MYSQL_USER} --dbpass=${MYSQL_PASSWORD} --dbhost=db --force --allow-root
+          wp core install --url=${WP_HOME} --title='Woo Plugin Dev' --admin_user=${WP_ADMIN_USER} --admin_password=${WP_ADMIN_PASSWORD} --admin_email=${WP_ADMIN_EMAIL} --skip-email --allow-root
+          wp plugin install woocommerce --activate --allow-root
+          wp plugin activate ${COMPOSE_PROJECT_NAME} --allow-root
+
+          echo 'Installation complete!'
+        else
+          echo 'WordPress is already installed. Skipping setup.'
+        fi
+      "
+
+  wordpress:
+    image: wordpress:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_wordpress
+    restart: unless-stopped
+    depends_on:
+      wordpress-setup:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_started
+    ports:
+      - "${WORDPRESS_PORT:-8000}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DEBUG: 1
+    volumes:
+      - ./wordpress:/var/www/html
+      - ./${COMPOSE_PROJECT_NAME}:/var/www/html/wp-content/plugins/${COMPOSE_PROJECT_NAME}
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
+
+  wordpress-action-scheduler:
+    image: wordpress:cli
+    container_name: ${COMPOSE_PROJECT_NAME}_scheduler
+    restart: unless-stopped
+    depends_on:
+      - wordpress
+    volumes:
+      - ./wordpress:/var/www/html
+      - ./${COMPOSE_PROJECT_NAME}:/var/www/html/wp-content/plugins/${COMPOSE_PROJECT_NAME}
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+    command: >
+      bash -c "
+        while true; do
+          wp action-scheduler run --allow-root
+          sleep 10
+        done
+      "
+      
+
+volumes:
+  db_data:
+  mailpit-data:

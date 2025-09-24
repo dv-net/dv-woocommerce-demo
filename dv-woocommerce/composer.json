@@ -1,0 +1,22 @@
+{
+  "name": "dv-net/dv-woocommerce",
+  "description": "DV.net payment gateway for WooCommerce.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Your Name",
+      "email": "email@example.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "dv-net/dv-net-php-client": "^v0.9.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "DvWoocommerce\\": "includes/"
+    }
+  }
+}
+
