@@ -1,14 +1,14 @@
-#  WooCommerce DV.net Gateway 🛒
+#  WooCommerce DV.net Gateway Demo 🛒
 
-This repository contains a WordPress plugin that integrates the [DV.net](https://dv.net) payment gateway with WooCommerce. It serves as a demonstration of how to use the [`dv-net/dv-net-php-client`](https://github.com/dv-net/dv-net-php-client) library in a real-world application. 🚀
+This repository contains a **demonstration project** for a WordPress plugin that integrates the [DV.net](https://dv.net) payment gateway with WooCommerce. It serves as an example of how to use the [`dv-net/dv-net-php-client`](https://github.com/dv-net/dv-net-php-client) library in a real-world application. 🚀
 
 ## How It Works ⚙️
 
-The plugin integrates with WooCommerce to add **DV.net** as a payment option on the checkout page. When a customer selects this payment method, they are redirected to a secure payment page hosted by DV.net to complete their purchase. 💳
+The plugin demonstrated here integrates with WooCommerce to add **DV.net** as a payment option on the checkout page. When a customer selects this payment method, they are redirected to a secure payment page hosted by DV.net to complete their purchase. 💳
 
 The plugin also exposes a webhook endpoint to receive notifications from DV.net about the payment status. When a payment is successfully confirmed, the plugin updates the corresponding order in WooCommerce. ✅
 
-## Installation 🛠️
+## Getting the Demo Running 🛠️
 
 ### Prerequisites
 
@@ -25,14 +25,14 @@ The plugin also exposes a webhook endpoint to receive notifications from DV.net 
     ```
 
 2.  **Install PHP dependencies:**
-    Navigate to the `dv-woocommerce` directory and run Composer to install the required dependencies.
+    Navigate to the `dv-woocommerce` directory and run Composer to install the required dependencies for the plugin.
     ```bash
     cd dv-woocommerce
     composer install
     ```
 
 3.  **Set up the environment:**
-    The project uses Docker for local development. A `docker-compose.yml` file is provided to set up a WordPress environment with the plugin pre-installed. You will need to create a `.env` file in the root of the project with the following variables:
+    The project uses Docker for a local development environment. A `docker-compose.yml` file is provided to set up a WordPress instance with the plugin pre-installed. You will need to create a `.env` file in the root of the project with the following variables:
 
     ```env
     COMPOSE_PROJECT_NAME=dv_woocommerce_dev
@@ -55,7 +55,7 @@ The plugin also exposes a webhook endpoint to receive notifications from DV.net 
 
 ## Configuration 🔧
 
-Once the environment is running, you can configure the plugin from the WordPress admin panel:
+Once the demo environment is running, you can configure the plugin from the WordPress admin panel:
 
 1.  Log in to the WordPress admin panel at `http://localhost:8000/wp-admin` with the credentials you set in your `.env` file (default: `admin`/`password`).
 2.  Navigate to **WooCommerce > Settings > Payments**.
@@ -70,7 +70,7 @@ You will be presented with the following settings to configure:
 * **API Key:** Your API key for authenticating with the DV.net API.
 * **API Secret:** Your API secret for validating webhook signatures.
 
-## Running the Project 🏃‍♀️
+## Exploring the Demo 🏃‍♀️
 
 After completing the installation and configuration steps, you can start testing the integration:
 
